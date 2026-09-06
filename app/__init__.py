@@ -1,1 +1,1 @@
-# RukiaApiPro package
+# RukiaApiPro

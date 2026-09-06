@@ -1,16 +1,15 @@
 """
-yt-dlp helper with caching + best format selection
-Handles current YouTube challenges as much as possible without external JS runtime.
+High-performance yt-dlp helper
+Optimized for Paid Heroku + maximum success rate
 """
 
 import asyncio
 import time
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 import yt_dlp
 from app.config import YDL_BASE_OPTS, CACHE_TTL, MAX_CACHE_SIZE
 
-# Simple in-memory cache
 _INFO_CACHE: Dict[str, Dict[str, Any]] = {}
 
 
@@ -31,8 +30,7 @@ def _cache_get(video_id: str) -> Optional[dict]:
 def _cache_set(video_id: str, info: dict):
     _INFO_CACHE[video_id] = {"info": info, "ts": time.time()}
     if len(_INFO_CACHE) > MAX_CACHE_SIZE:
-        # remove oldest 50
-        oldest = sorted(_INFO_CACHE.items(), key=lambda x: x[1]["ts"])[:50]
+        oldest = sorted(_INFO_CACHE.items(), key=lambda x: x[1]["ts"])[:80]
         for k, _ in oldest:
             _INFO_CACHE.pop(k, None)
 
@@ -42,7 +40,6 @@ def build_url(video_id: str) -> str:
 
 
 async def extract_info(video_id: str) -> dict:
-    """Extract video info with cache."""
     cached = _cache_get(video_id)
     if cached:
         return cached
@@ -55,13 +52,13 @@ async def extract_info(video_id: str) -> dict:
 
     info = await asyncio.to_thread(_run)
     if not info:
-        raise ValueError("No info returned from yt-dlp")
+        raise ValueError("yt-dlp returned empty info")
     _cache_set(video_id, info)
     return info
 
 
 def pick_best_audio(info: dict) -> Optional[dict]:
-    """Prefer high-quality m4a / aac, then opus/webm."""
+    """Prefer high quality m4a/aac → opus → any audio."""
     formats = info.get("formats") or []
     candidates = []
 
@@ -75,16 +72,19 @@ def pick_best_audio(info: dict) -> Optional[dict]:
             score = float(abr)
 
             if ext == "m4a" or "mp4a" in acodec:
-                score += 2500
+                score += 3000
             elif ext == "webm" or "opus" in acodec:
-                score += 900
+                score += 1200
+            elif ext == "mp3":
+                score += 400
+
             candidates.append((score, f))
 
     if candidates:
         candidates.sort(key=lambda x: x[0], reverse=True)
         return candidates[0][1]
 
-    # progressive fallback
+    # Progressive fallback
     for f in formats:
         if f.get("url") and f.get("acodec") not in (None, "none"):
             return f
@@ -92,7 +92,6 @@ def pick_best_audio(info: dict) -> Optional[dict]:
 
 
 def pick_best_video(info: dict, max_height: int = 720) -> Optional[dict]:
-    """Prefer progressive mp4 ≤ max_height."""
     formats = info.get("formats") or []
     progressive = []
 
@@ -100,7 +99,7 @@ def pick_best_video(info: dict, max_height: int = 720) -> Optional[dict]:
         if not f.get("url"):
             continue
         height = f.get("height") or 0
-        if height > max_height or height == 0:
+        if height == 0 or height > max_height:
             continue
         if f.get("vcodec") not in (None, "none") and f.get("acodec") not in (None, "none"):
             tbr = f.get("tbr") or 0
@@ -110,7 +109,6 @@ def pick_best_video(info: dict, max_height: int = 720) -> Optional[dict]:
         progressive.sort(key=lambda x: (x[0], x[1]), reverse=True)
         return progressive[0][2]
 
-    # video-only fallback
     video_only = []
     for f in formats:
         if not f.get("url"):
@@ -125,7 +123,7 @@ def pick_best_video(info: dict, max_height: int = 720) -> Optional[dict]:
     return None
 
 
-async def search_tracks(query: str, limit: int = 6) -> list:
+async def search_tracks(query: str, limit: int = 8) -> List[dict]:
     ydl_opts = {
         **YDL_BASE_OPTS,
         "extract_flat": "in_playlist",
@@ -155,7 +153,4 @@ async def search_tracks(query: str, limit: int = 6) -> list:
 
 
 def cache_stats() -> dict:
-    return {
-        "size": len(_INFO_CACHE),
-        "ttl_seconds": CACHE_TTL,
-    }
+    return {"size": len(_INFO_CACHE), "ttl_seconds": CACHE_TTL}

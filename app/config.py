@@ -1,5 +1,5 @@
 """
-RukiaApiPro - Configuration
+RukiaApiPro - High Performance Config (Paid Heroku Optimized)
 Developer: @flexyy
 """
 
@@ -8,7 +8,7 @@ from pathlib import Path
 
 # ==================== APP INFO ====================
 APP_NAME = "RukiaApiPro"
-VERSION = "1.3.0"
+VERSION = "2.0.0-PRO"
 DEVELOPER = "@flexyy"
 GITHUB = "https://github.com/EuthleXO/RukiaAPI-Pro"
 CONTACT = "https://t.me/flexyy"
@@ -20,12 +20,11 @@ COOKIES_FILE = BASE_DIR / "cookies.txt"
 TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 
-# ==================== CACHE ====================
-CACHE_TTL = 300          # seconds
-MAX_CACHE_SIZE = 400
+# ==================== CACHE (Aggressive for speed) ====================
+CACHE_TTL = 600          # 10 minutes
+MAX_CACHE_SIZE = 800
 
-# ==================== YT-DLP ====================
-# Optimized for 2026 YouTube challenges
+# ==================== YT-DLP (Strongest practical clients 2026) ====================
 YDL_BASE_OPTS = {
     "quiet": True,
     "no_warnings": True,
@@ -34,24 +33,33 @@ YDL_BASE_OPTS = {
     "nocheckcertificate": True,
     "geo_bypass": True,
     "force_ipv4": True,
-    "socket_timeout": 12,
-    "retries": 2,
-    "fragment_retries": 2,
+    "socket_timeout": 10,
+    "retries": 3,
+    "fragment_retries": 3,
     "ignoreerrors": False,
     "noplaylist": True,
-    # Best client combination for current YouTube (JS challenge / SABR / PoW bypass)
+    # Strong client rotation for current YouTube challenges
     "extractor_args": {
         "youtube": {
-            "player_client": ["tv", "web_embedded", "mweb", "android", "web"],
+            "player_client": [
+                "tv",
+                "web_embedded",
+                "mweb",
+                "android",
+                "ios",
+                "web",
+            ],
             "player_skip": ["webpage", "configs"],
         }
     },
 }
 
-# Load cookies if present
 if COOKIES_FILE.exists():
     YDL_BASE_OPTS["cookiefile"] = str(COOKIES_FILE)
 
 # ==================== SERVER ====================
 PORT = int(os.environ.get("PORT", 8000))
 HOST = "0.0.0.0"
+
+# Paid dyno friendly
+WORKERS = int(os.environ.get("WEB_CONCURRENCY", 2))

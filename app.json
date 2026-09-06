@@ -1,21 +1,25 @@
 {
   "name": "RukiaApiPro",
-  "description": "Ultra-Fast YouTube Streaming API by @flexyy — Perfect for Telegram Music Bots",
+  "description": "Ultra-Fast YouTube Streaming API by @flexyy — PRO edition for Paid Heroku",
   "repository": "https://github.com/EuthleXO/RukiaAPI-Pro",
   "logo": "https://raw.githubusercontent.com/EuthleXO/RukiaAPI-Pro/main/static/logo.png",
-  "keywords": ["youtube", "api", "music", "telegram", "streaming", "yt-dlp", "fastapi"],
+  "keywords": ["youtube", "api", "music", "telegram", "streaming", "yt-dlp", "fastapi", "pro"],
   "success_url": "/",
   "website": "https://github.com/EuthleXO/RukiaAPI-Pro",
   "env": {
     "PYTHON_VERSION": {
-      "description": "Python version (do not change)",
+      "description": "Python version",
       "value": "3.12.8"
+    },
+    "WEB_CONCURRENCY": {
+      "description": "Number of workers (2 recommended for Standard-1X / Performance dynos)",
+      "value": "2"
     }
   },
   "formation": {
     "web": {
       "quantity": 1,
-      "size": "basic"
+      "size": "standard-1x"
     }
   },
   "buildpacks": [

@@ -1,28 +1,28 @@
-# ⚡ RukiaApiPro
+# ⚡ RukiaApiPro v2.0 PRO
 
-**Ultra-Fast YouTube Streaming API**
+**Ultra-Fast YouTube Streaming API**  
+**Optimized for Paid Heroku Dynos**
 
 **Developer:** [@flexyy](https://t.me/flexyy)  
 **GitHub:** https://github.com/EuthleXO/RukiaAPI-Pro
 
 ---
 
-## 🚀 One-Click Deploy on Heroku
+## 🚀 One-Click Deploy
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://dashboard.heroku.com/new?template=https://github.com/EuthleXO/RukiaAPI-Pro)
 
 ---
 
-## ✨ Features
+## ✨ PRO Features
 
-- 🚀 Single-Call Streaming (No token exchange)
-- ⚡ Ultra Low Latency — Direct 302 redirect to YouTube CDN
-- 🔥 200+ MB/s possible (CDN dependent)
-- 🍪 Cookies support ready
-- 🧪 Live Docs + Speed Tester at `/`
-- 📱 Perfect for Telegram Music Bots (Yukki, AnonX, Fallen…)
-- ❌ No API Key required currently
-- 🛡️ Multiple player clients for better YouTube challenge handling
+- ⚡ **Maximum Speed** — Direct 302 to YouTube CDN (200–1000+ MB/s possible)
+- 🔥 **2 Workers + uvloop + httptools** (Paid dyno optimized)
+- 🍪 **Cookies support** (strongly recommended)
+- 🧪 **Live Docs + Speed Tester** at `/`
+- 📱 Perfect for Telegram Music Bots
+- 🛡️ Strong multi-client yt-dlp config
+- ❌ No API Key required
 
 ---
 
@@ -30,63 +30,55 @@
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET /` | Public docs + live tester |
-| `GET /stream/{video_id}?type=audio` | Direct stream (redirect by default) |
-| `GET /info/{video_id}` | Track metadata |
+| `GET /` | Docs + Live Tester |
+| `GET /stream/{video_id}?type=audio` | Fastest stream (redirect) |
+| `GET /info/{video_id}` | Metadata |
 | `GET /search?q=...` | Search |
-| `GET /speedtest/{video_id}` | Live speed test |
-| `GET /formats/{video_id}` | List formats |
-| `GET /health` | Health check |
+| `GET /speedtest/{video_id}` | Real speed test |
+| `GET /formats/{video_id}` | Formats |
+| `GET /health` | Health |
 
-### Stream Options
-- `type=audio` (default) or `type=video`
-- `redirect=true` (default) → 302 to CDN (fastest)
-- `redirect=false` → Proxy through API
+**Best practice for bots:**
+```
+/stream/VIDEO_ID?type=audio          → 302 redirect (fastest)
+/stream/VIDEO_ID?type=audio&redirect=false  → proxy mode
+```
 
 ---
 
-## 🍪 Cookies (Recommended)
+## 🍪 Cookies (Very Important)
 
 1. Rename `cookies.txt.example` → `cookies.txt`
-2. Paste Netscape-format YouTube cookies
-3. Restart / Redeploy
+2. Paste valid Netscape YouTube cookies
+3. Redeploy
+
+This dramatically improves success rate.
 
 ---
 
-## 📁 Project Structure
+## 📁 Structure
 
 ```
 RukiaApiPro/
-├── main.py                 # Entry point
+├── main.py
 ├── app/
-│   ├── __init__.py
-│   ├── config.py           # Settings
-│   ├── ytdl_helper.py      # yt-dlp + cache + format selection
-│   └── routes.py           # All API routes
-├── templates/
-│   └── index.html          # Public docs + tester
-├── app.json                # Heroku one-click deploy
-├── Procfile
-├── runtime.txt
+│   ├── config.py
+│   ├── ytdl_helper.py
+│   └── routes.py
+├── templates/index.html
+├── app.json
+├── Procfile          ← 2 workers + uvloop
 ├── requirements.txt
-├── cookies.txt.example
-└── README.md
+└── ...
 ```
 
 ---
 
-## 🐍 Quick Usage
+## 🤖 Music Bot Usage
 
 ```python
-import aiohttp
-
-BASE = "https://your-app.herokuapp.com"
-VIDEO_ID = "Zi_XLOBDo_Y"
-
-async with aiohttp.ClientSession() as session:
-    async with session.get(f"{BASE}/stream/{VIDEO_ID}?type=audio", allow_redirects=False) as r:
-        if r.status in (301, 302, 307, 308):
-            print(r.headers["Location"])  # Direct CDN URL
+stream_url = f"{API}/stream/{videoid}?type=audio"
+# Use this URL directly in PyTgCalls / GroupCall / FFmpeg
 ```
 
 ---

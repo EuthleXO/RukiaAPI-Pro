@@ -1,10 +1,11 @@
 """
-RukiaApiPro - Ultra Fast YouTube Streaming API
-Developer : @flexyy (Telegram)
+RukiaApiPro v2.0 PRO
+Ultra Fast YouTube Streaming API
+Developer : @flexyy
 GitHub    : https://github.com/EuthleXO/RukiaAPI-Pro
+Optimized for Paid Heroku Dynos
 """
 
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -16,7 +17,7 @@ from app.routes import router
 
 app = FastAPI(
     title=APP_NAME,
-    description="Ultra-fast YouTube Audio/Video Streaming API | No API Key required",
+    description="Ultra-fast YouTube Streaming API | PRO Edition | No API Key",
     version=VERSION,
     docs_url="/swagger",
     redoc_url="/redoc",
@@ -38,9 +39,9 @@ app.include_router(router)
 
 @app.on_event("startup")
 async def startup():
-    print(f"🚀 {APP_NAME} v{VERSION} started")
+    print(f"🚀 {APP_NAME} {VERSION} started")
     print(f"👨‍💻 Developer: {DEVELOPER}")
-    print(f"🍪 Cookies: {'Loaded ✅' if COOKIES_FILE.exists() else 'Not found ⚠️'}")
+    print(f"🍪 Cookies: {'Loaded ✅' if COOKIES_FILE.exists() else 'Missing ⚠️  (add cookies.txt for best results)'}")
 
 
 if __name__ == "__main__":

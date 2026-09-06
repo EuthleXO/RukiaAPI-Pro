@@ -1,0 +1,7 @@
+# Rename this file to cookies.txt and paste your Netscape-format YouTube cookies.
+# How to get:
+# 1. Install "Get cookies.txt LOCALLY" browser extension
+# 2. Go to youtube.com (logged in)
+# 3. Export cookies → paste full content here
+# 4. Save as cookies.txt (same folder as main.py)
+# 5. Redeploy

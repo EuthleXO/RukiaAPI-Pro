@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ app_name }} — Ultra Fast YouTube Streaming API</title>
+  <meta name="description" content="RukiaApiPro - Lightning fast YouTube audio/video streaming API by @flexyy"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #121826;
+      --border: #1e293b;
+      --primary: #6366f1;
+      --primary-hover: #818cf8;
+      --accent: #22d3ee;
+      --success: #10b981;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --danger: #f43f5e;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+    header {
+      background: linear-gradient(180deg, #0f172a 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 22px 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .logo {
+      font-size: 1.55rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #818cf8, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .badge {
+      background: rgba(99,102,241,0.15);
+      color: #a5b4fc;
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .header-links a {
+      color: var(--muted);
+      text-decoration: none;
+      margin-left: 16px;
+      font-size: 0.88rem;
+    }
+    .header-links a:hover { color: var(--accent); }
+
+    .hero {
+      text-align: center;
+      padding: 50px 0 36px;
+    }
+    .hero h1 {
+      font-size: clamp(1.9rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 14px;
+      line-height: 1.15;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 1.1rem;
+      max-width: 580px;
+      margin: 0 auto 24px;
+    }
+    .deploy-btn {
+      display: inline-block;
+      margin: 8px 6px;
+    }
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .section { padding: 32px 0; }
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .tester-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 768px) {
+      .tester-grid { grid-template-columns: 1fr; }
+    }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    input, select {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 11px 13px;
+      border-radius: 9px;
+      font-size: 0.92rem;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 11px 18px;
+      border-radius: 9px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    button:hover { background: var(--primary-hover); }
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    button.secondary:hover { border-color: var(--primary); }
+
+    .result-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      max-height: 300px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .result-box.success { border-color: var(--success); }
+    .result-box.error { border-color: var(--danger); }
+
+    .speed-display { text-align: center; padding: 18px; }
+    .speed-value {
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .speed-unit { font-size: 0.95rem; color: var(--muted); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; }
+    code {
+      background: #1e293b;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #a5b4fc;
+    }
+
+    .code-block {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 0.72rem;
+      cursor: pointer;
+    }
+
+    footer {
+      text-align: center;
+      padding: 36px 0 48px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-inner">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="logo">{{ app_name }}</div>
+        <span class="badge">v{{ version }}</span>
+      </div>
+      <div class="header-links">
+        <a href="{{ github }}" target="_blank">GitHub</a>
+        <a href="{{ contact }}" target="_blank">Telegram</a>
+        <a href="/swagger">Swagger</a>
+        <a href="/health">Health</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Ultra-Fast YouTube<br>Streaming API</h1>
+      <p>Single-call direct streaming • No API key • Built for Telegram Music Bots</p>
+
+      <!-- One-Click Heroku Deploy Button -->
+      <div>
+        <a class="deploy-btn" href="{{ heroku_deploy }}" target="_blank">
+          <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="40">
+        </a>
+      </div>
+
+      <div class="stats">
+        <div>
+          <div class="stat-value"><span class="status-dot"></span>Live</div>
+          <div class="stat-label">Status</div>
+        </div>
+        <div>
+          <div class="stat-value">&lt; 20ms</div>
+          <div class="stat-label">TTFB</div>
+        </div>
+        <div>
+          <div class="stat-value">200+ MB/s</div>
+          <div class="stat-label">CDN Speed</div>
+        </div>
+        <div>
+          <div class="stat-value">@flexyy</div>
+          <div class="stat-label">Developer</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Tester -->
+    <section class="section">
+      <h2 class="section-title">🧪 Live API Tester</h2>
+      <div class="card">
+        <div class="tester-grid">
+          <div>
+            <label>YouTube Video ID or URL</label>
+            <input type="text" id="videoInput" placeholder="Zi_XLOBDo_Y or full URL" value="Zi_XLOBDo_Y" />
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+              <div>
+                <label>Type</label>
+                <select id="typeSelect">
+                  <option value="audio">Audio</option>
+                  <option value="video">Video</option>
+                </select>
+              </div>
+              <div>
+                <label>Mode</label>
+                <select id="redirectSelect">
+                  <option value="true">Redirect (Fastest)</option>
+                  <option value="false">Proxy</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button onclick="testInfo()">📋 Info</button>
+              <button onclick="testStream()">▶️ Stream</button>
+              <button class="secondary" onclick="testSpeed()">⚡ Speed</button>
+              <button class="secondary" onclick="testSearch()">🔍 Search</button>
+            </div>
+          </div>
+
+          <div>
+            <label>Response</label>
+            <div id="resultBox" class="result-box">// Results appear here...</div>
+            <div id="speedBox" class="speed-display" style="display:none;">
+              <div class="speed-value" id="speedValue">0</div>
+              <div class="speed-unit">MB/s from CDN</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Endpoints -->
+    <section class="section">
+      <h2 class="section-title">📡 Endpoints</h2>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table>
+          <thead>
+            <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>GET</code></td><td><code>/stream/{video_id}?type=audio</code></td><td>Direct stream (302 redirect)</td></tr>
+            <tr><td><code>GET</code></td><td><code>/info/{video_id}</code></td><td>Track metadata</td></tr>
+            <tr><td><code>GET</code></td><td><code>/search?q=query&limit=5</code></td><td>Search tracks</td></tr>
+            <tr><td><code>GET</code></td><td><code>/speedtest/{video_id}</code></td><td>Live speed test</td></tr>
+            <tr><td><code>GET</code></td><td><code>/formats/{video_id}</code></td><td>List formats</td></tr>
+            <tr><td><code>GET</code></td><td><code>/health</code></td><td>Health + cookies status</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Python Example -->
+    <section class="section">
+      <h2 class="section-title">🐍 Python (Music Bot / aiohttp)</h2>
+      <div class="card">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre>import aiohttp
+
+BASE = "https://your-app.herokuapp.com"
+VIDEO_ID = "Zi_XLOBDo_Y"
+
+async def get_stream():
+    url = f"{BASE}/stream/{VIDEO_ID}?type=audio"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, allow_redirects=False) as resp:
+            if resp.status in (301, 302, 307, 308):
+                return resp.headers["Location"]   # Direct CDN URL
+        # Or download
+        async with session.get(url) as resp:
+            return await resp.read()</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Music Bot Drop-in -->
+    <section class="section">
+      <h2 class="section-title">🤖 Music Bot Quick Integration</h2>
+      <div class="card">
+        <p style="color:var(--muted);margin-bottom:12px;">
+          For Yukki / AnonX / Fallen style bots — just use the stream URL directly in your player:
+        </p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre># Example inside your bot
+stream_url = f"{API_BASE}/stream/{videoid}?type=audio"
+
+# PyTgCalls / GroupCall
+await call.play(chat_id, stream_url)
+
+# Or with yt-dlp style bots
+await YouTube.download(...)  # replace with above stream URL</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Notes -->
+    <section class="section">
+      <h2 class="section-title">💡 Notes</h2>
+      <div class="card">
+        <ul style="padding-left:18px;color:var(--muted);">
+          <li style="margin-bottom:8px;"><b style="color:var(--text)">redirect=true</b> (default) → 302 to YouTube CDN → highest speed (often 200–1000+ MB/s).</li>
+          <li style="margin-bottom:8px;"><b style="color:var(--text)">cookies.txt</b> → Put Netscape cookies in project root for age-restricted videos.</li>
+          <li style="margin-bottom:8px;">No API key required currently.</li>
+          <li>Uses multiple player clients (tv, web_embedded, mweb, android…) to improve success against current YouTube challenges.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      Made with ⚡ by <a href="{{ contact }}" target="_blank">{{ developer }}</a> ·
+      <a href="{{ github }}" target="_blank">GitHub</a> ·
+      <a href="{{ heroku_deploy }}" target="_blank">Deploy on Heroku</a>
+    </div>
+  </footer>
+
+  <script>
+    const BASE = window.location.origin;
+
+    function extractId(input) {
+      input = input.trim();
+      if (input.length === 11 && !input.includes("/") && !input.includes("?")) return input;
+      const m = input.match(/(?:v=|\/vi\/|\/v\/|youtu\.be\/|\/embed\/|\/shorts\/)([a-zA-Z0-9_-]{11})/);
+      return m ? m[1] : input;
+    }
+
+    function showResult(data, isError = false) {
+      const box = document.getElementById("resultBox");
+      box.className = "result-box " + (isError ? "error" : "success");
+      box.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      document.getElementById("speedBox").style.display = "none";
+    }
+
+    async function testInfo() {
+      const id = extractId(document.getElementById("videoInput").value);
+      showResult("Loading...");
+      try {
+        const res = await fetch(`${BASE}/info/${id}`);
+        const data = await res.json();
+        showResult(data, !res.ok);
+      } catch (e) { showResult("Error: " + e.message, true); }
+    }
+
+    async function testStream() {
+      const id = extractId(document.getElementById("videoInput").value);
+      const type = document.getElementById("typeSelect").value;
+      const redirect = document.getElementById("redirectSelect").value;
+      showResult("Getting stream...");
+      try {
+        const res = await fetch(`${BASE}/stream/${id}?type=${type}&redirect=${redirect}`, { redirect: "manual" });
+        if (res.status >= 300 && res.status < 400) {
+          showResult({
+            status: "redirect",
+            extraction_time: res.headers.get("X-Extraction-Time-Ms") + " ms",
+            direct_url: res.headers.get("Location"),
+            note: "Use this URL directly in players / bots"
+          });
+        } else {
+          const data = await res.json().catch(() => ({ status: res.status }));
+          showResult(data, !res.ok);
+        }
+      } catch (e) { showResult("Error: " + e.message, true); }
+    }
+
+    async function testSpeed() {
+      const id = extractId(document.getElementById("videoInput").value);
+      const type = document.getElementById("typeSelect").value;
+      showResult("Running speed test...");
+      try {
+        const res = await fetch(`${BASE}/speedtest/${id}?type=${type}`);
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById("speedValue").textContent = data.speed_MBps;
+          document.getElementById("speedBox").style.display = "block";
+          showResult(data);
+        } else showResult(data, true);
+      } catch (e) { showResult("Error: " + e.message, true); }
+    }
+
+    async function testSearch() {
+      const q = document.getElementById("videoInput").value || "Arijit Singh";
+      showResult("Searching...");
+      try {
+        const res = await fetch(`${BASE}/search?q=${encodeURIComponent(q)}&limit=5`);
+        const data = await res.json();
+        showResult(data, !res.ok);
+      } catch (e) { showResult("Error: " + e.message, true); }
+    }
+
+    function copyCode(btn) {
+      const pre = btn.parentElement.querySelector("pre");
+      navigator.clipboard.writeText(pre.innerText);
+      btn.textContent = "Copied!";
+      setTimeout(() => btn.textContent = "Copy", 1400);
+    }
+  </script>
+</body>
+</html>

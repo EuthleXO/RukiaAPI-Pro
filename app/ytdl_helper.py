@@ -1,6 +1,6 @@
 """
-High-performance yt-dlp helper
-Optimized for Paid Heroku + maximum success rate
+High-performance yt-dlp helper with multi-strategy fallback
+Handles Error 152 / unavailable / age-gate as much as possible
 """
 
 import asyncio
@@ -8,14 +8,24 @@ import time
 from typing import Optional, Dict, Any, List
 
 import yt_dlp
-from app.config import YDL_BASE_OPTS, CACHE_TTL, MAX_CACHE_SIZE
+from app.config import YDL_BASE_OPTS, CACHE_TTL, MAX_CACHE_SIZE, COOKIES_FILE
 
 _INFO_CACHE: Dict[str, Dict[str, Any]] = {}
 
 
+def _base_opts() -> dict:
+    opts = dict(YDL_BASE_OPTS)  # shallow copy
+    if COOKIES_FILE.exists():
+        opts["cookiefile"] = str(COOKIES_FILE)
+    return opts
+
+
 def _get_ydl(extra: dict = None):
-    opts = YDL_BASE_OPTS.copy()
+    opts = _base_opts()
     if extra:
+        if "extractor_args" in extra:
+            opts["extractor_args"] = extra["extractor_args"]
+            extra = {k: v for k, v in extra.items() if k != "extractor_args"}
         opts.update(extra)
     return yt_dlp.YoutubeDL(opts)
 
@@ -39,26 +49,97 @@ def build_url(video_id: str) -> str:
     return f"https://www.youtube.com/watch?v={video_id}"
 
 
+# Ordered strategies — try until one works (Error 152 mitigation)
+CLIENT_STRATEGIES = [
+    # 1. Most reliable currently for many restricted videos
+    {
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["tv", "tv_embedded", "web_embedded"],
+                "player_skip": ["webpage", "configs"],
+            }
+        }
+    },
+    # 2. Mobile web + android
+    {
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["mweb", "android", "ios"],
+                "player_skip": ["webpage", "configs"],
+            }
+        }
+    },
+    # 3. Web creator + web
+    {
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["web_creator", "web", "mweb"],
+                "player_skip": ["configs"],
+            }
+        }
+    },
+    # 4. Minimal / last resort
+    {
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "web"],
+                "player_skip": ["webpage", "configs", "js"],
+            }
+        }
+    },
+]
+
+
+def _try_extract(url: str, extra: dict = None) -> dict:
+    with _get_ydl(extra) as ydl:
+        return ydl.extract_info(url, download=False)
+
+
 async def extract_info(video_id: str) -> dict:
+    """
+    Try multiple player-client strategies until one succeeds.
+    """
     cached = _cache_get(video_id)
     if cached:
         return cached
 
     url = build_url(video_id)
+    last_error = None
 
-    def _run():
-        with _get_ydl() as ydl:
-            return ydl.extract_info(url, download=False)
+    # Default first
+    try:
+        info = await asyncio.to_thread(_try_extract, url)
+        if info and info.get("id"):
+            _cache_set(video_id, info)
+            return info
+    except Exception as e:
+        last_error = e
 
-    info = await asyncio.to_thread(_run)
-    if not info:
-        raise ValueError("yt-dlp returned empty info")
-    _cache_set(video_id, info)
-    return info
+    # Fallback strategies
+    for strategy in CLIENT_STRATEGIES:
+        try:
+            info = await asyncio.to_thread(_try_extract, url, strategy)
+            if info and info.get("id"):
+                _cache_set(video_id, info)
+                return info
+        except Exception as e:
+            last_error = e
+            continue
+
+    msg = str(last_error) if last_error else "Unknown extraction error"
+    if "ERROR: " in msg:
+        msg = msg.split("ERROR: ", 1)[-1]
+    # Make message cleaner for API consumers
+    if "Error code: 152" in msg or "unavailable" in msg.lower():
+        msg = (
+            "Video unavailable (YouTube Error 152). "
+            "This usually means region lock, age-restriction, or temporary YouTube block. "
+            "Try another video or refresh cookies.txt."
+        )
+    raise ValueError(msg[:450])
 
 
 def pick_best_audio(info: dict) -> Optional[dict]:
-    """Prefer high quality m4a/aac → opus → any audio."""
     formats = info.get("formats") or []
     candidates = []
 
@@ -84,7 +165,6 @@ def pick_best_audio(info: dict) -> Optional[dict]:
         candidates.sort(key=lambda x: x[0], reverse=True)
         return candidates[0][1]
 
-    # Progressive fallback
     for f in formats:
         if f.get("url") and f.get("acodec") not in (None, "none"):
             return f
@@ -125,13 +205,13 @@ def pick_best_video(info: dict, max_height: int = 720) -> Optional[dict]:
 
 async def search_tracks(query: str, limit: int = 8) -> List[dict]:
     ydl_opts = {
-        **YDL_BASE_OPTS,
+        **_base_opts(),
         "extract_flat": "in_playlist",
         "default_search": f"ytsearch{limit}",
     }
 
     def _run():
-        with _get_ydl(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             return ydl.extract_info(query, download=False)
 
     results = await asyncio.to_thread(_run)

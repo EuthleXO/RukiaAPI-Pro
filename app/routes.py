@@ -59,8 +59,8 @@ async def get_info(video_id: str):
     except Exception as e:
         raise HTTPException(400, {
             "error": "extraction_failed",
-            "message": str(e)[:300],
-            "tip": "Add valid cookies.txt for age-restricted / hard videos",
+            "message": str(e)[:350],
+            "tip": "Video may be private/removed/region-locked. Fresh cookies.txt usually fixes age-restricted videos. Try another video ID to test.",
         })
 
     elapsed = round((time.time() - start) * 1000, 1)

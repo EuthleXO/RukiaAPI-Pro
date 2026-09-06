@@ -8,7 +8,7 @@ from pathlib import Path
 
 # ==================== APP INFO ====================
 APP_NAME = "RukiaApiPro"
-VERSION = "2.0.0-PRO"
+VERSION = "2.1.0-PRO"
 DEVELOPER = "@flexyy"
 GITHUB = "https://github.com/EuthleXO/RukiaAPI-Pro"
 CONTACT = "https://t.me/flexyy"
@@ -38,17 +38,10 @@ YDL_BASE_OPTS = {
     "fragment_retries": 3,
     "ignoreerrors": False,
     "noplaylist": True,
-    # Strong client rotation for current YouTube challenges
+    # Default clients (multi-strategy fallback in ytdl_helper)
     "extractor_args": {
         "youtube": {
-            "player_client": [
-                "tv",
-                "web_embedded",
-                "mweb",
-                "android",
-                "ios",
-                "web",
-            ],
+            "player_client": ["tv", "tv_embedded", "web_embedded", "mweb"],
             "player_skip": ["webpage", "configs"],
         }
     },
